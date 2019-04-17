@@ -29,7 +29,7 @@ func GetConfig() *Config {
 
 func (c *Config) load() {
 	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
-	confFile, err := os.Open("/etc/pik-adenda/config.prod.json")
+	confFile, err := os.Open("/etc/pik-arenda/config.json")
 	if err != nil {
 		log.Fatal(err)
 	}
