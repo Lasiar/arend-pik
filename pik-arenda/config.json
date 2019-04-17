@@ -1,0 +1,4 @@
+{
+  "connect_string": "user=postgres dbname=arenda password=1111 sslmode=disable",
+  "port": ":8080"
+}
