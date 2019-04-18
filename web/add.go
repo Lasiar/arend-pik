@@ -7,25 +7,10 @@ import (
 	"pik-arenda/model"
 )
 
-// Flat flat struct
-type Flat struct {
-	City       string  `json:"city"`
-	District   string  `json:"district"`
-	Street     string  `json:"street"`
-	House      int     `json:"house"`
-	Literal    string  `json:"literal"`
-	FloorCount int     `json:"floor_count"`
-	Floor      int     `json:"floor"`
-	RoomCount  int     `json:"room_count"`
-	RoomNumber int     `json:"room_number"`
-	Space      float64 `json:"space"`
-	Cost       float64 `json:"cost"`
-}
-
 func add() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		flat := new(Flat)
+		flat := new(model.Flat)
 
 		if err := json.NewDecoder(r.Body).Decode(&flat); err != nil {
 			SetError(r, err)
@@ -56,7 +41,7 @@ func add() http.Handler {
 			return
 		}
 
-		houseID, err := db.SelectHouseID(cityID, districtID, streetID, flat.House, flat.Literal)
+		houseID, err := db.SelectHouseID(cityID, districtID, streetID, flat.HouseNumber, flat.Literal)
 		if err != nil {
 			SetError(r, fmt.Errorf("select house id: %v", err))
 			return
@@ -66,7 +51,7 @@ func add() http.Handler {
 			return
 		}
 
-		flatID, err := db.InputFlat(houseID, flat.RoomNumber, flat.Floor, flat.RoomCount, flat.Cost, flat.Space)
+		flatID, err := db.InsertFlat(houseID, flat.RoomNumber, flat.Floor, flat.RoomCount, flat.Cost, flat.Space)
 		if err != nil {
 			SetError(r, fmt.Errorf("input flat: %v", err))
 			return

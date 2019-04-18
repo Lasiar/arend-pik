@@ -5,37 +5,6 @@ import (
 	"fmt"
 )
 
-// FlatData struc for save info
-type FlatData struct {
-	flatDataPublic
-	flatDataPrivate
-}
-
-type flatDataPublic struct {
-	ID         int     `json:"id"`
-	City       string  `json:"city"`
-	District   string  `json:"district"`
-	Street     string  `json:"street"`
-	House      int     `json:"house"`
-	FloorCount int     `json:"floor_count"`
-	Floor      int     `json:"floor"`
-	RoomCount  int     `json:"room_count"`
-	RoomNumber int     `json:"room_number"`
-	Literal    string  `json:"literal"`
-	Space      float64 `json:"space"`
-	Cost       float64 `json:"cost"`
-}
-
-type flatDataPrivate struct {
-	literal sql.NullString
-}
-
-func (fd *FlatData) validate() {
-	if fd.flatDataPrivate.literal.Valid {
-		fd.flatDataPublic.Literal = fd.flatDataPrivate.literal.String
-	}
-}
-
 // EventDataSelectBuilder структура для удобной работы с запросами по выборке событий
 type EventDataSelectBuilder struct {
 	db         *sql.DB
@@ -46,11 +15,7 @@ type EventDataSelectBuilder struct {
 	baseFrom   string
 	baseSelect string
 	rawSelect  string
-	City       string
-	Street     string
-	District   string
-	Space      float64
-	Cost       float64
+	FlatDataPublic
 }
 
 // NewSelectBuilder зоздает новый экземпляр SelectBuilder
@@ -96,24 +61,53 @@ func (sb *EventDataSelectBuilder) makeOrder(args *[]interface{}) string {
 
 func (sb *EventDataSelectBuilder) makeWhere(args *[]interface{}) string {
 	query := sb.baseWhere
+	if sb.ID != 0 {
+		query += ` AND flat.id = ` + sb.addArg(args, sb.ID)
+	}
+
 	if sb.City != "" {
-		query += " AND city.name = " + sb.addArg(args, sb.City)
-	}
-
-	if sb.Cost != 0 {
-		query += " AND flat.cost = " + sb.addArg(args, sb.Cost)
-	}
-
-	if sb.Street != "" {
-		query += " AND street.id = " + sb.addArg(args, sb.Street)
+		query += ` AND city."name" = ` + sb.addArg(args, sb.City)
 	}
 
 	if sb.District != "" {
-		query += " AND district.name = " + sb.addArg(args, sb.District)
+		query += ` AND district."name" =` + sb.addArg(args, sb.District)
+	}
+
+	if sb.Street != "" {
+		query += ` AND street."name" = ` + sb.addArg(args, sb.Street)
+	}
+
+	if sb.HouseNumber != 0 {
+		query += ` AND  house."number" = ` + sb.addArg(args, sb.HouseNumber)
+	}
+
+	if sb.Literal != "" {
+		query += ` AND house.literal = ` + sb.addArg(args, sb.Literal)
+
+	}
+
+	if sb.FloorCount != 0 {
+		query += ` AND house.floor_count = ` + sb.addArg(args, sb.FloorCount)
+	}
+
+	if sb.Floor != 0 {
+		query += ` AND flat.floor = ` + sb.addArg(args, sb.Floor)
+	}
+
+	if sb.RoomCount != 0 {
+		query += `  AND flat.room_count = ` + sb.addArg(args, sb.RoomCount)
+	}
+
+	if sb.RoomNumber != 0 {
+		query += ` AND flat."number" = ` + sb.addArg(args, sb.RoomNumber)
 	}
 
 	if sb.Space != 0 {
-		query += " AND flat.space = " + sb.addArg(args, sb.Space)
+		query += ` AND flat.space = ` + sb.addArg(args, sb.Space)
+	}
+
+	if sb.Cost != 0 {
+		query += ` AND flat.cost = ` + sb.addArg(args, sb.Cost)
 	}
 
 	return query
@@ -125,9 +119,9 @@ func (sb *EventDataSelectBuilder) addArg(args *[]interface{}, arg interface{}) s
 }
 
 // Select select
-func (sb *EventDataSelectBuilder) Select() ([]*FlatData, error) {
+func (sb *EventDataSelectBuilder) Select() ([]*Flat, error) {
 	args := make([]interface{}, 0)
-	res := make([]*FlatData, 0)
+	res := make([]*Flat, 0)
 
 	query := sb.rawSelect + sb.baseFrom + sb.makeWhere(&args) + sb.makeOrder(&args)
 
@@ -138,7 +132,7 @@ func (sb *EventDataSelectBuilder) Select() ([]*FlatData, error) {
 	}
 
 	for rows.Next() {
-		fd := &FlatData{}
+		fd := &Flat{}
 		err = rows.Scan(&fd.ID,
 			&fd.Cost,
 			&fd.Space,

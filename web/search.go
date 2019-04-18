@@ -9,13 +9,13 @@ import (
 
 func search() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		flat := new(struct {
-			Flat
-			PageNumber int `json:"page_number"`
-			RowsOnPage int `json:"rows_on_page"`
+		flatSearch := new(struct {
+			model.FlatDataPublic
+			MaxCount int `json:"max_count"`
+			Offset   int `json:"offset"`
 		})
 
-		if err := json.NewDecoder(r.Body).Decode(&flat); err != nil {
+		if err := json.NewDecoder(r.Body).Decode(&flatSearch); err != nil {
 			SetError(r, err)
 			return
 		}
@@ -26,10 +26,9 @@ func search() http.Handler {
 		}
 
 		sb := db.NewSelectBuilder()
-
-		sb.Space = flat.Space
-		sb.District = flat.District
-		sb.City = flat.City
+		sb.FlatDataPublic = flatSearch.FlatDataPublic
+		sb.MaxCount = flatSearch.MaxCount
+		sb.Offset = flatSearch.Offset
 
 		res, err := sb.Select()
 		if err != nil {
