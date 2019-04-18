@@ -59,6 +59,7 @@ func (sb *EventDataSelectBuilder) makeOrder(args *[]interface{}) string {
 	return query
 }
 
+// TODO: cyclomatic complexity 13  is high
 func (sb *EventDataSelectBuilder) makeWhere(args *[]interface{}) string {
 	query := sb.baseWhere
 	if sb.ID != 0 {

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"pik-arenda/base"
 	"sync"
-
+	// Register psql driver
 	_ "github.com/lib/pq"
 )
 
@@ -15,6 +15,7 @@ type Flat struct {
 	flatDataPrivate
 }
 
+// FlatDataPublic only public field
 type FlatDataPublic struct {
 	ID          int     `json:"id,omitempty"`
 	City        string  `json:"city,omitempty"`

@@ -1,0 +1,1 @@
+Show config connect string on here https://godoc.org/github.com/lib/pq#hdr-Connection_String_Parameters
