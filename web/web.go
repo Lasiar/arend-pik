@@ -9,34 +9,14 @@ import (
 	"time"
 )
 
-func middlewareCORS(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Add("Access-Control-Allow-Origin", "*")
-		w.Header().Add("Access-Control-Allow-Headers", "*")
-		w.Header().Add("Access-Control-Allow-Credentials", "true")
-		w.Header().Add("Access-Control-Allow-Methods", "POST, OPTIONS")
-
-		if r.Method == http.MethodOptions {
-			return
-		}
-
-		if r.Method != http.MethodPost {
-			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-			return
-		}
-
-		next.ServeHTTP(w, r)
-	})
-}
-
 // Run start web server
 func Run() {
 	serveMux := http.NewServeMux()
 
-	serveMux.Handle("/search", JSONWriteHandler(search()))
-	serveMux.Handle("/add", JSONWriteHandler(add()))
+	serveMux.HandleFunc("/search", search)
+	serveMux.HandleFunc("/add", add)
 
-	apiMux := middlewareCORS(serveMux)
+	apiMux := JSONWriteHandler(serveMux)
 
 	server := &http.Server{
 		Addr:           base.GetConfig().Port,
@@ -59,10 +39,12 @@ func JSONWriteHandler(next http.Handler) http.Handler {
 		w.Header().Set("Access-Control-Allow-Headers", "*")
 		w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
 		w.Header().Set("Content-Type", "application/json")
+
 		if r.Method == http.MethodOptions {
 			w.Header().Set("Allow", "POST, OPTIONS")
 			return
 		}
+
 		if next != nil {
 			next.ServeHTTP(w, r)
 		}

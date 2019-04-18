@@ -72,12 +72,3 @@ func SetResponse(r *http.Request, data interface{}) {
 		),
 	)
 }
-
-// SetErrorOrResponse устанавливает в контекст ошибку, или дату если ошибка равна nil
-func SetErrorOrResponse(r *http.Request, data interface{}, err error) {
-	if err != nil {
-		SetError(r, err)
-	} else {
-		SetResponse(r, data)
-	}
-}
